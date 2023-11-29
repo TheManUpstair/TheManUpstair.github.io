@@ -31,7 +31,10 @@
 </div>
 <button type="button" onclick="run_hour()">Do hour</button>
 </div>
-<div class="column" id="combat_log_column">
+<div class="column">
+<h3>Combat log</h3>
+<div id="combat_log_column">
+</div>
 </div>
 </div>
 <script>
@@ -82,7 +85,7 @@ function run_hour() {
         hit_chance = hit_chance * Math.min((target.profile/45) ** 2, 1);
         for (weapon of ship.weapons) {
           if (Math.random() < hit_chance) {
-          		add_p_before("combat_log_column", "combat_log", ship.name + "'s " + weapon.name + " hit " + target.name);
+          		add_p_to_beginning("combat_log_column", ship.name + "'s " + weapon.name + " hit " + target.name);
                 target.health -= weapon.light_attack;
                 target.health -= weapon.torpedo_attack;
           }
@@ -94,7 +97,7 @@ function run_hour() {
         hit_chance = hit_chance * Math.min((target.profile/45) ** 2, 1);
         for (weapon of ship.weapons) {
           if (Math.random() < hit_chance) {
-          		add_p_before("combat_log_column", "combat_log", ship.name + "'s " + weapon.name + " hit " + target.name);
+          		add_p_to_beginning("combat_log_column", ship.name + "'s " + weapon.name + " hit " + target.name);
                 target.health -= weapon.light_attack;
                 target.health -= weapon.torpedo_attack;
           }
@@ -145,13 +148,12 @@ function add_p(id, text) {
     let element = document.getElementById(id);
     element.appendChild(para);
 }
-function add_p_before(id_container, id, text) {
+function add_p_to_beginning(id_container, text) {
 	let para = document.createElement("p");
     let node = document.createTextNode(text);
     para.appendChild(node);
     let element = document.getElementById(id_container);
-    let child = document.getElementById(id_container.firstChild);
-    element.insertBefore(para, child);
+    element.insertBefore(para, element.firstChild);
 }
 
 // Define weaposn
