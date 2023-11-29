@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html>
+<head>
+<style>
+/* Columns */
+* {
+  box-sizing: border-box;
+}
+.column {
+  float: left;
+  width: 50%;
+  padding: 10px;
+}
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+</style>
+</head>
 <body>
+<div class="row">
+<div class="column">
 <h3 id="side_1_name_id"></h3>
 <div>
 <p id="side_1_ship_list"></p>
@@ -10,6 +30,10 @@
 <p id="side_2_ship_list"></p>
 </div>
 <button type="button" onclick="run_hour()">Do hour</button>
+</div>
+<div class="column" id="combat_log_column">
+</div>
+</div>
 <script>
 // Define classes
 class Side {
@@ -20,16 +44,29 @@ class Side {
     }
 }
 class Ship {
-	constructor(name, health, weapons) {
+	constructor(name, speed, health, weapons) {
     	this.name = name;
+        this.speed = speed;
         this.health = health;
         this.weapons = weapons;
+        this.light_attack = 0;
+        this.torpedo_attack = 0;
+        this.visibility = 10;
+        this.profile = (100 * this.visibility)/(0.5 * this.speed + 20);
+        this.calculate_attack_values();
+    }
+    calculate_attack_values() {
+    	for (let weapon of this.weapons) {
+        	this.light_attack += weapon.light_attack;
+            this.torpedo_attack += weapon.torpedo_attack;
+        }
     }
 }
 class Weapon {
-	constructor(name, damage) {
+	constructor(name, light_attack, torpedo_attack) {
     	this.name = name;
-        this.damage = damage;
+        this.light_attack = light_attack;
+        this.torpedo_attack = torpedo_attack;
     }
 }
 
@@ -39,18 +76,28 @@ function get_random(list) {
 }
 function run_hour() {
 	// Ships fire
-	for (let i = 0; i < side_1.ships.length; i++) {
-    	if (Math.random() > 0.5) {
-        	for (let j = 0; j < side_1.ships[i].weapons.length; j++) {
-    			get_random(side_2.ships).health -= side_1.ships[i].weapons[j].damage;
-            }
+	for (let ship of side_1.ships) {
+    	let target = get_random(side_2.ships);
+        let hit_chance = 0.1;
+        hit_chance = hit_chance * Math.min((target.profile/45) ** 2, 1);
+        for (weapon of ship.weapons) {
+          if (Math.random() < hit_chance) {
+          		add_p_before("combat_log_column", "combat_log", ship.name + "'s " + weapon.name + " hit " + target.name);
+                target.health -= weapon.light_attack;
+                target.health -= weapon.torpedo_attack;
+          }
         }
     }
-    for (let i = 0; i < side_2.ships.length; i++) {
-    	if (Math.random() > 0.5) {
-        	for (let j = 0; j < side_2.ships[i].weapons.length; j++) {
-    			get_random(side_1.ships).health -= side_2.ships[i].weapons[j].damage;
-            }
+    for (let ship of side_2.ships) {
+    	let target = get_random(side_1.ships);
+        let hit_chance = 0.1;
+        hit_chance = hit_chance * Math.min((target.profile/45) ** 2, 1);
+        for (weapon of ship.weapons) {
+          if (Math.random() < hit_chance) {
+          		add_p_before("combat_log_column", "combat_log", ship.name + "'s " + weapon.name + " hit " + target.name);
+                target.health -= weapon.light_attack;
+                target.health -= weapon.torpedo_attack;
+          }
         }
     }
 	// Remove sunken ships
@@ -91,14 +138,31 @@ function display_ships() {
   }
 }
 
+function add_p(id, text) {
+	let para = document.createElement("p");
+    let node = document.createTextNode(text);
+    para.appendChild(node);
+    let element = document.getElementById(id);
+    element.appendChild(para);
+}
+function add_p_before(id_container, id, text) {
+	let para = document.createElement("p");
+    let node = document.createTextNode(text);
+    para.appendChild(node);
+    let element = document.getElementById(id_container);
+    let child = document.getElementById(id_container.firstChild);
+    element.insertBefore(para, child);
+}
+
 // Define weaposn
-const light_guns = new Weapon("Light Gun", 6);
+const light_guns = new Weapon("Light Gun", 6, 0);
+const torpedoes = new Weapon("Torpedoes", 0, 10);
 const side_1_ships = [];
-const ArleighBurke = new Ship("Arleigh Burke", 50, [light_guns]);
-side_1_ships.push(ArleighBurke);
+const Fletcher = new Ship("Fletcher", 37, 50, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes,torpedoes]);
+side_1_ships.push(Fletcher);
 const side_2_ships = [];
-const Fubuki = new Ship("Fubuki", 20, [light_guns]);
-const Ayanami = new Ship("Ayanami", 20, [light_guns]);
+const Fubuki = new Ship("Fubuki", 38, 50, [light_guns,light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes]);
+const Ayanami = new Ship("Ayanami", 38, 50, [light_guns,light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes]);
 side_2_ships.push(Fubuki, Ayanami);
 const side_1 = new Side(1, "America", side_1_ships);
 const side_2 = new Side(2, "Japan", side_2_ships);
