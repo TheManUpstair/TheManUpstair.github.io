@@ -1,6 +1,39 @@
 <!DOCTYPE html>
 <html>
 <body>
-<p>Hello, world!</p>
+<p id="side_1_name_id"></p>
+<p id="side_2_name_id"></p>
+<button type="button" onclick="testFunction()">Click Me!</button>
+<script>
+// Define classes
+class Side {
+	constructor(name, ships) {
+    	this.name = name
+    	this.ships = ships
+    }
+}
+class Ship {
+	constructor(name) {
+    	this.name = name
+    }
+}
+
+// Define functions
+function testFunction() {
+	document.getElementById("side_1_name_id").innerHTML = side_2.ships[0].name;
+}
+
+// Define variables
+const side_1_ships = []
+const side_2_ships = []
+const Fubuki = new Ship("Fubuki")
+side_2_ships.push(Fubuki)
+const side_1 = new Side("America", side_1_ships)
+const side_2 = new Side("Japan", side_2_ships)
+
+// Code to execute
+document.getElementById("side_1_name_id").innerHTML = side_1_name;
+document.getElementById("side_2_name_id").innerHTML = side_2_name;
+</script> 
 </body>
 </html>
