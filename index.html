@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html>
 <body>
-<p id="side_1_name_id"></p>
-<p id="side_2_name_id"></p>
+<h3 id="side_1_name_id"></h3>
+<h3 id="side_2_name_id"></h3>
+<dl>
+<p id="side_2_ship_list"></p>
+</dl>
 <button type="button" onclick="testFunction()">Click Me!</button>
 <script>
 // Define classes
@@ -20,20 +23,27 @@ class Ship {
 
 // Define functions
 function testFunction() {
-	document.getElementById("side_1_name_id").innerHTML = side_2.ships[0].name;
+	for (let i = 0; i < side_2.ships.length; i++){
+      const para = document.createElement("p");
+      const node = document.createTextNode(side_2.ships[i].name);
+      para.appendChild(node);
+      const element = document.getElementById("side_2_ship_list");
+      element.appendChild(para);
+    }
 }
 
 // Define variables
 const side_1_ships = []
 const side_2_ships = []
 const Fubuki = new Ship("Fubuki")
-side_2_ships.push(Fubuki)
+const Ayanami = new Ship("Ayanami")
+side_2_ships.push(Fubuki, Ayanami)
 const side_1 = new Side("America", side_1_ships)
 const side_2 = new Side("Japan", side_2_ships)
 
 // Code to execute
-document.getElementById("side_1_name_id").innerHTML = side_1_name;
-document.getElementById("side_2_name_id").innerHTML = side_2_name;
+document.getElementById("side_1_name_id").innerHTML = side_1.name;
+document.getElementById("side_2_name_id").innerHTML = side_2.name;
 </script> 
 </body>
 </html>
