@@ -10,6 +10,8 @@
   float: left;
   width: 50%;
   padding: 10px;
+  overflow: hidden;
+  height: 300px;
 }
 .row:after {
   content: "";
@@ -35,6 +37,14 @@
 <h3>Combat log</h3>
 <div id="combat_log_column">
 </div>
+</div>
+</div>
+<div class="row">
+<div class="column">
+<p>123</p>
+</div>
+<div class="column">
+<p>123</p>
 </div>
 </div>
 <script>
@@ -66,8 +76,9 @@ class Ship {
     }
 }
 class Weapon {
-	constructor(name, light_attack, torpedo_attack) {
+	constructor(name, hit_profile, light_attack, torpedo_attack) {
     	this.name = name;
+        this.hit_profile = hit_profile;
         this.light_attack = light_attack;
         this.torpedo_attack = torpedo_attack;
     }
@@ -81,27 +92,11 @@ function run_hour() {
 	// Ships fire
 	for (let ship of side_1.ships) {
     	let target = get_random(side_2.ships);
-        let hit_chance = 0.1;
-        hit_chance = hit_chance * Math.min((target.profile/45) ** 2, 1);
-        for (weapon of ship.weapons) {
-          if (Math.random() < hit_chance) {
-          		add_p_to_beginning("combat_log_column", ship.name + "'s " + weapon.name + " hit " + target.name);
-                target.health -= weapon.light_attack;
-                target.health -= weapon.torpedo_attack;
-          }
-        }
+        fire_at_target(ship, target);
     }
     for (let ship of side_2.ships) {
     	let target = get_random(side_1.ships);
-        let hit_chance = 0.1;
-        hit_chance = hit_chance * Math.min((target.profile/45) ** 2, 1);
-        for (weapon of ship.weapons) {
-          if (Math.random() < hit_chance) {
-          		add_p_to_beginning("combat_log_column", ship.name + "'s " + weapon.name + " hit " + target.name);
-                target.health -= weapon.light_attack;
-                target.health -= weapon.torpedo_attack;
-          }
-        }
+        fire_at_target(ship, target);
     }
 	// Remove sunken ships
     for (let s of sides) {
@@ -121,6 +116,22 @@ function run_hour() {
     }
     // Put in new information
 	display_ships()
+}
+
+function fire_at_target(ship, target) {
+	let hit_chance = 0.1;
+    hit_chance = hit_chance * Math.min((target.profile/45) ** 2, 1);
+    for (weapon of ship.weapons) {
+      if (target.health > 0 && Math.random() < hit_chance) {
+        target.health -= weapon.light_attack;
+        target.health -= weapon.torpedo_attack;
+        if (target.health <= 0) {
+          add_p_to_beginning("combat_log_column", ship.name + "'s " + weapon.name + " hit and sunk " + target.name);
+        } else {
+          add_p_to_beginning("combat_log_column", ship.name + "'s " + weapon.name + " hit " + target.name);
+        }
+      }
+    }
 }
 
 function display_ships() {
@@ -148,6 +159,7 @@ function add_p(id, text) {
     let element = document.getElementById(id);
     element.appendChild(para);
 }
+
 function add_p_to_beginning(id_container, text) {
 	let para = document.createElement("p");
     let node = document.createTextNode(text);
@@ -157,8 +169,8 @@ function add_p_to_beginning(id_container, text) {
 }
 
 // Define weaposn
-const light_guns = new Weapon("Light Gun", 6, 0);
-const torpedoes = new Weapon("Torpedoes", 0, 10);
+const light_guns = new Weapon("Light Gun", 45, 6, 0);
+const torpedoes = new Weapon("Torpedoes", 145, 0, 10);
 const side_1_ships = [];
 const Fletcher = new Ship("Fletcher", 37, 50, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes,torpedoes]);
 side_1_ships.push(Fletcher);
