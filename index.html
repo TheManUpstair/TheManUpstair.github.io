@@ -24,6 +24,10 @@
 #combat_log_column {
   line-height: 1px;
 }
+h3 {
+  padding:0px;
+  margin:0px;
+}
 </style>
 </head>
 <body>
@@ -54,9 +58,12 @@
 <input type="text" id="speed_text"> <br>
 <label>Health:</label>
 <input type="text" id="health_text"> <br>
-<label>Light Guns:</label>
-<input type="text" id="light_guns_text"> <br>
-<button type="button" onclick="add_ship(document.getElementById('name_text').value)">Add</button>
+<label>Side:</label>
+<select id="side_choice">
+<option value="1">1</option>
+<option value="2">2</option>
+</select><br>
+<button type="button" onclick="add_ship(document.getElementById('name_text').value, document.getElementById('speed_text').value, document.getElementById('health_text').value, document.getElementById('side_choice').value)">Add</button>
 </div>
 <div class="column">
 <p>123</p>
@@ -130,13 +137,12 @@ function run_hour() {
 
 function fire_at_target(ship, target) {
 	let hit_chance = 0.1;
-    hit_chance = hit_chance * Math.min((target.profile/45) ** 2, 1);
     for (weapon of ship.weapons) {
-      if (target.health > 0 && Math.random() < hit_chance) {
+      if (target.health > 0 && Math.random() < hit_chance * Math.min((target.profile/weapon.hit_profile) ** 2, 1)) {
         target.health -= weapon.light_attack;
         target.health -= weapon.torpedo_attack;
         if (target.health <= 0) {
-          add_p_to_beginning("combat_log_column", ship.name + "'s " + weapon.name + " hit and sunk " + target.name);
+          add_p_to_beginning("combat_log_column", ship.name + "'s " + weapon.name + " sunk " + target.name);
         } else {
           add_p_to_beginning("combat_log_column", ship.name + "'s " + weapon.name + " hit " + target.name);
         }
@@ -182,8 +188,8 @@ function add_p_to_beginning(id_container, text) {
     element.insertBefore(para, element.firstChild);
 }
 
-function add_ship(name) {
-	side_1.ships.push(new Ship(name, 37, 50, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes,torpedoes]));
+function add_ship(name, speed, health, side_id) {
+	sides[side_id-1].ships.push(new Ship(name, speed, health, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes,torpedoes]));
     display_ships();
 }
 
