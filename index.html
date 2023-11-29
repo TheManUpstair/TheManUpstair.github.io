@@ -2,48 +2,112 @@
 <html>
 <body>
 <h3 id="side_1_name_id"></h3>
+<div>
+<p id="side_1_ship_list"></p>
+</div>
 <h3 id="side_2_name_id"></h3>
-<dl>
+<div>
 <p id="side_2_ship_list"></p>
-</dl>
-<button type="button" onclick="testFunction()">Click Me!</button>
+</div>
+<button type="button" onclick="run_hour()">Do hour</button>
 <script>
 // Define classes
 class Side {
-	constructor(name, ships) {
-    	this.name = name
-    	this.ships = ships
+	constructor(id, name, ships) {
+    	this.id = id;
+    	this.name = name;
+    	this.ships = ships;
     }
 }
 class Ship {
-	constructor(name) {
-    	this.name = name
+	constructor(name, health, weapons) {
+    	this.name = name;
+        this.health = health;
+        this.weapons = weapons;
+    }
+}
+class Weapon {
+	constructor(name, damage) {
+    	this.name = name;
+        this.damage = damage;
     }
 }
 
 // Define functions
-function testFunction() {
-	for (let i = 0; i < side_2.ships.length; i++){
-      const para = document.createElement("p");
-      const node = document.createTextNode(side_2.ships[i].name);
-      para.appendChild(node);
-      const element = document.getElementById("side_2_ship_list");
-      element.appendChild(para);
+function get_random(list) {
+	return list[Math.floor((Math.random()*list.length))];
+}
+function run_hour() {
+	// Ships fire
+	for (let i = 0; i < side_1.ships.length; i++) {
+    	if (Math.random() > 0.5) {
+        	for (let j = 0; j < side_1.ships[i].weapons.length; j++) {
+    			get_random(side_2.ships).health -= side_1.ships[i].weapons[j].damage;
+            }
+        }
     }
+    for (let i = 0; i < side_2.ships.length; i++) {
+    	if (Math.random() > 0.5) {
+        	for (let j = 0; j < side_2.ships[i].weapons.length; j++) {
+    			get_random(side_1.ships).health -= side_2.ships[i].weapons[j].damage;
+            }
+        }
+    }
+	// Remove sunken ships
+    for (let s of sides) {
+      for (let i = 0; i < s.ships.length; i++) {
+        if (s.ships[i].health <= 0) {
+            // Janky but works
+            s.ships.splice(i, 1);
+            i -= 1;
+            continue;
+        }
+      }
+    }
+	// Wipe existing ships
+    var paras = document.getElementsByClassName("ship_name_class");
+    while(paras[0]) {
+        paras[0].parentNode.removeChild(paras[0]);
+    }
+    // Put in new information
+	display_ships()
 }
 
-// Define variables
-const side_1_ships = []
-const side_2_ships = []
-const Fubuki = new Ship("Fubuki")
-const Ayanami = new Ship("Ayanami")
-side_2_ships.push(Fubuki, Ayanami)
-const side_1 = new Side("America", side_1_ships)
-const side_2 = new Side("Japan", side_2_ships)
+function display_ships() {
+  for(let s of sides) {
+    for (let i = 0; i < s.ships.length; i++) {
+      let para = document.createElement("p");
+      para.className = "ship_name_class";
+      let node = document.createTextNode(s.ships[i].name + " " + s.ships[i].health);
+      para.appendChild(node);
+      let element = document.getElementById("side_1_ship_list");
+      if (s.id == 1) {
+      	element = document.getElementById("side_1_ship_list");
+      } else if (s.id == 2) {
+      	element = document.getElementById("side_2_ship_list");
+      }
+      element.appendChild(para);
+    }
+  }
+}
+
+// Define weaposn
+const light_guns = new Weapon("Light Gun", 6);
+const side_1_ships = [];
+const ArleighBurke = new Ship("Arleigh Burke", 50, [light_guns]);
+side_1_ships.push(ArleighBurke);
+const side_2_ships = [];
+const Fubuki = new Ship("Fubuki", 20, [light_guns]);
+const Ayanami = new Ship("Ayanami", 20, [light_guns]);
+side_2_ships.push(Fubuki, Ayanami);
+const side_1 = new Side(1, "America", side_1_ships);
+const side_2 = new Side(2, "Japan", side_2_ships);
+const sides = [side_1, side_2];
 
 // Code to execute
 document.getElementById("side_1_name_id").innerHTML = side_1.name;
 document.getElementById("side_2_name_id").innerHTML = side_2.name;
+display_ships()
 </script> 
 </body>
 </html>
