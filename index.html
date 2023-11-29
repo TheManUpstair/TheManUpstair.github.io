@@ -18,6 +18,12 @@
   display: table;
   clear: both;
 }
+.ship_name_class {
+  line-height: 1px;
+}
+#combat_log_column {
+  line-height: 1px;
+}
 </style>
 </head>
 <body>
@@ -41,7 +47,16 @@
 </div>
 <div class="row">
 <div class="column">
-<p>123</p>
+<h3>Add a ship</h3>
+<label>Name:</label>
+<input type="text" id="name_text"> <br>
+<label>Speed:</label>
+<input type="text" id="speed_text"> <br>
+<label>Health:</label>
+<input type="text" id="health_text"> <br>
+<label>Light Guns:</label>
+<input type="text" id="light_guns_text"> <br>
+<button type="button" onclick="add_ship(document.getElementById('name_text').value)">Add</button>
 </div>
 <div class="column">
 <p>123</p>
@@ -109,12 +124,7 @@ function run_hour() {
         }
       }
     }
-	// Wipe existing ships
-    var paras = document.getElementsByClassName("ship_name_class");
-    while(paras[0]) {
-        paras[0].parentNode.removeChild(paras[0]);
-    }
-    // Put in new information
+	// Display ship information
 	display_ships()
 }
 
@@ -135,6 +145,10 @@ function fire_at_target(ship, target) {
 }
 
 function display_ships() {
+  let paras = document.getElementsByClassName("ship_name_class");
+  while(paras[0]) {
+    paras[0].parentNode.removeChild(paras[0]);
+  }
   for(let s of sides) {
     for (let i = 0; i < s.ships.length; i++) {
       let para = document.createElement("p");
@@ -166,6 +180,11 @@ function add_p_to_beginning(id_container, text) {
     para.appendChild(node);
     let element = document.getElementById(id_container);
     element.insertBefore(para, element.firstChild);
+}
+
+function add_ship(name) {
+	side_1.ships.push(new Ship(name, 37, 50, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes,torpedoes]));
+    display_ships();
 }
 
 // Define weaposn
