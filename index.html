@@ -41,7 +41,8 @@ h3 {
 <div>
 <p id="side_2_ship_list"></p>
 </div>
-<button type="button" onclick="run_hour()">Do hour</button>
+<button type="button" onclick="run_hour()">Do hour</button><br>
+<button type="button" onclick="run_simulation()">Run simulation</button>
 </div>
 <div class="column">
 <h3>Combat log</h3>
@@ -53,20 +54,48 @@ h3 {
 <div class="column">
 <h3>Add a ship</h3>
 <label>Name:</label>
-<input type="text" id="name_text"> <br>
-<label>Speed:</label>
-<input type="text" id="speed_text"> <br>
+<input type="text" id="ship_name_text"> <br>
 <label>Health:</label>
-<input type="text" id="health_text"> <br>
-<label>Side:</label>
-<select id="side_choice">
-<option value="1">1</option>
-<option value="2">2</option>
+<input type="text" id="ship_health_text"> <br>
+<label>Class:</label>
+<select id="ship_design_choice">
+<option value="0">Fletcher</option>
+<option value="1">Fubuki</option>
 </select><br>
-<button type="button" onclick="add_ship(document.getElementById('name_text').value, document.getElementById('speed_text').value, document.getElementById('health_text').value, document.getElementById('side_choice').value)">Add</button>
+<label>Side:</label>
+<select id="ship_side_choice">
+<option value="1" id="side_1_name">1</option>
+<option value="2" id="side_1_name">2</option>
+</select><br>
+<button type="button" onclick="add_ship(document.getElementById('ship_name_text').value, all_ship_classes[document.getElementById('ship_design_choice').value], document.getElementById('ship_health_text').value, document.getElementById('ship_side_choice').value)">Add</button>
 </div>
 <div class="column">
-<p>123</p>
+<h3>Create a class</h3>
+<label>Name:</label>
+<input type="text" id="class_name_text"> <br>
+<label>Health:</label>
+<input type="text" id="class_health_text"> <br>
+<label>Speed:</label>
+<input type="text" id="class_speed_text"> <br>
+<label>Light guns:</label>
+<select id="class_light_guns_choice">
+<option value="0">0</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+</select><br>
+<label>Torpedoes:</label>
+<select id="class_torpedoes_choice">
+<option value="0">0</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+</select><br>
+<button type="button" onclick="add_class(document.getElementById('class_name_text').value,document.getElementById('class_health_text').value, document.getElementById('class_speed_text').value, document.getElementById('class_light_guns_choice').value, document.getElementById('class_torpedoes_choice').value)">Add</button>
 </div>
 </div>
 <script>
@@ -78,23 +107,21 @@ class Side {
     	this.ships = ships;
     }
 }
-class Ship {
-	constructor(name, speed, health, weapons) {
+class ShipClass {
+	constructor(name, base_health, speed, weapons) {
     	this.name = name;
+        this.base_health = base_health;
         this.speed = speed;
-        this.health = health;
         this.weapons = weapons;
-        this.light_attack = 0;
-        this.torpedo_attack = 0;
         this.visibility = 10;
         this.profile = (100 * this.visibility)/(0.5 * this.speed + 20);
-        this.calculate_attack_values();
     }
-    calculate_attack_values() {
-    	for (let weapon of this.weapons) {
-        	this.light_attack += weapon.light_attack;
-            this.torpedo_attack += weapon.torpedo_attack;
-        }
+}
+class Ship {
+	constructor(name, design) {
+    	this.name = name;
+        this.design = design;
+        this.health = design.base_health;
     }
 }
 class Weapon {
@@ -110,6 +137,13 @@ class Weapon {
 function get_random(list) {
 	return list[Math.floor((Math.random()*list.length))];
 }
+
+function run_simulation() {
+	while (side_1.ships.length > 0 && side_2.ships.length > 0) {
+    	run_hour();
+    }
+}
+
 function run_hour() {
 	// Ships fire
 	for (let ship of side_1.ships) {
@@ -137,8 +171,8 @@ function run_hour() {
 
 function fire_at_target(ship, target) {
 	let hit_chance = 0.1;
-    for (weapon of ship.weapons) {
-      if (target.health > 0 && Math.random() < hit_chance * Math.min((target.profile/weapon.hit_profile) ** 2, 1)) {
+    for (weapon of ship.design.weapons) {
+      if (target.health > 0 && Math.random() < hit_chance * Math.min((target.design.profile/weapon.hit_profile) ** 2, 1)) {
         target.health -= weapon.light_attack;
         target.health -= weapon.torpedo_attack;
         if (target.health <= 0) {
@@ -188,21 +222,37 @@ function add_p_to_beginning(id_container, text) {
     element.insertBefore(para, element.firstChild);
 }
 
-function add_ship(name, speed, health, side_id) {
-	sides[side_id-1].ships.push(new Ship(name, speed, health, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes,torpedoes]));
+function add_ship(name, design, health, side_id) {
+	if (health == 0) {
+    	health = design.base_health;
+    }
+	sides[side_id-1].ships.push(new Ship(name, design, health));
     display_ships();
+}
+
+function add_class(name, base_health, speed, light_gun_amount, torpedo_amount) {
+	all_ship_classes.push(new ShipClass(name, Number(base_health), Number(speed), Array(light_gun_amount).fill(light_guns)));
+    let newOption = new Option(name, all_ship_classes.length-1);
+    const select = document.querySelector("#ship_design_choice");
+    select.add(newOption, undefined);
 }
 
 // Define weaposn
 const light_guns = new Weapon("Light Gun", 45, 6, 0);
 const torpedoes = new Weapon("Torpedoes", 145, 0, 10);
+
+// Define ship classes
+FletcherClass = new ShipClass("Fletcher Class", 50, 36, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes,torpedoes]);
+FubukiClass = new ShipClass("Fubuki Class", 50, 38, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes]);
+all_ship_classes = [FletcherClass, FubukiClass];
+
+// Define ships
 const side_1_ships = [];
-const Fletcher = new Ship("Fletcher", 37, 50, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes,torpedoes]);
-side_1_ships.push(Fletcher);
+side_1_ships.push(new Ship("Fletcher", FletcherClass));
 const side_2_ships = [];
-const Fubuki = new Ship("Fubuki", 38, 50, [light_guns,light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes]);
-const Ayanami = new Ship("Ayanami", 38, 50, [light_guns,light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes]);
-side_2_ships.push(Fubuki, Ayanami);
+side_2_ships.push(new Ship("Fubuki", FubukiClass), new Ship("Ayanami", FubukiClass));
+
+// Define sides
 const side_1 = new Side(1, "America", side_1_ships);
 const side_2 = new Side(2, "Japan", side_2_ships);
 const sides = [side_1, side_2];
