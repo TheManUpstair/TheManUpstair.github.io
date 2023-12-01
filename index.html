@@ -2,7 +2,6 @@
 <html>
 <head>
 <style>
-/* Columns */
 * {
   box-sizing: border-box;
 }
@@ -147,7 +146,7 @@ function run_simulation() {
 }
 
 function run_hour() {
-	// Ships fire
+	// Ships fire -- note that this is biased towards side 1
 	for (let ship of side_1.ships) {
     	let target = get_random(side_2.ships);
         fire_at_target(ship, target);
@@ -163,7 +162,6 @@ function run_hour() {
             // Janky but works
             s.ships.splice(i, 1);
             i -= 1;
-            continue;
         }
       }
     }
@@ -177,12 +175,15 @@ function fire_at_target(ship, target) {
     let before_health = target.health;
     for (weapon of ship.design.weapons) {
       if ((weapon.torpedo_attack == 0 || hour % 4 == 0) && target.health > 0 && Math.random() < hit_chance * Math.min((target.design.profile/weapon.hit_profile) ** 2, 1)) {
+      	// Light attack
       	if (target.design.armor > 0) {
         	target.health -= weapon.light_attack * weapon.light_piercing / target.design.armor;
         } else {
         	target.health -= weapon.light_attack;
         }
+        // Torpedo attack
         target.health -= weapon.torpedo_attack;
+        // Report to combat log
         let damage_done = Math.round(before_health - target.health);
         if (target.health <= 0) {
           add_p_to_beginning("combat_log_column", ship.name + "'s " + weapon.name + " sunk " + target.name);
@@ -195,10 +196,12 @@ function fire_at_target(ship, target) {
 }
 
 function display_ships() {
-  let paras = document.getElementsByClassName("ship_name_class");
-  while(paras[0]) {
-    paras[0].parentNode.removeChild(paras[0]);
+  // Remove existing ships
+  let ship_name_class_list_p = document.getElementsByClassName("ship_name_class");
+  while(ship_name_class_list_p[0]) {
+    ship_name_class_list_p[0].parentNode.removeChild(ship_name_class_list_p[0]);
   }
+  // Add in ships with updated data
   for(let s of sides) {
     for (let i = 0; i < s.ships.length; i++) {
       let para = document.createElement("p");
@@ -246,18 +249,16 @@ function add_class(name, base_health, speed, light_gun_amount, torpedo_amount) {
 
 // Define weapons
 const light_guns = new Weapon("Light Gun", 45, 6, 1.5, 0);
-const torpedoes = new Weapon("Torpedoes", 145, 0, -1, 10);
+const torpedoes = new Weapon("Torpedoes", 145, 0, 0, 10);
 
 // Define ship classes
-FletcherClass = new ShipClass("Fletcher Class", 50, 36, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes,torpedoes], 2);
+FletcherClass = new ShipClass("Fletcher Class", 50, 36, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes,torpedoes], 0);
 FubukiClass = new ShipClass("Fubuki Class", 50, 38, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes], 0);
 all_ship_classes = [FletcherClass, FubukiClass];
 
 // Define ships
-const side_1_ships = [];
-side_1_ships.push(new Ship("Fletcher", FletcherClass));
-const side_2_ships = [];
-side_2_ships.push(new Ship("Fubuki", FubukiClass), new Ship("Ayanami", FubukiClass));
+const side_1_ships = [new Ship("Fletcher", FletcherClass), new Ship("Rooks", FletcherClass)];
+const side_2_ships = [new Ship("Fubuki", FubukiClass), new Ship("Ayanami", FubukiClass)];
 
 // Define sides
 const side_1 = new Side(1, "America", side_1_ships);
