@@ -177,14 +177,13 @@ function fire_at_target(ship, target) {
     let before_health = target.health;
     for (weapon of ship.design.weapons) {
       if ((weapon.torpedo_attack == 0 || hour % 4 == 0) && target.health > 0 && Math.random() < hit_chance * Math.min((target.design.profile/weapon.hit_profile) ** 2, 1)) {
-      	if (target.armor > 0) {
-        	target.health -= weapon.light_attack * weapon.light_piercing / target.armor;
-            console.log(weapon.light_piercing / target.armor);
+      	if (target.design.armor > 0) {
+        	target.health -= weapon.light_attack * weapon.light_piercing / target.design.armor;
         } else {
         	target.health -= weapon.light_attack;
         }
         target.health -= weapon.torpedo_attack;
-        let damage_done = before_health - target.health;
+        let damage_done = Math.round(before_health - target.health);
         if (target.health <= 0) {
           add_p_to_beginning("combat_log_column", ship.name + "'s " + weapon.name + " sunk " + target.name);
         } else {
@@ -204,7 +203,7 @@ function display_ships() {
     for (let i = 0; i < s.ships.length; i++) {
       let para = document.createElement("p");
       para.className = "ship_name_class";
-      let node = document.createTextNode(s.ships[i].name + " " + s.ships[i].health);
+      let node = document.createTextNode(s.ships[i].name + " " + Math.round(s.ships[i].health));
       para.appendChild(node);
       let element = document.getElementById("side_1_ship_list");
       if (s.id == 1) {
@@ -250,7 +249,7 @@ const light_guns = new Weapon("Light Gun", 45, 6, 1.5, 0);
 const torpedoes = new Weapon("Torpedoes", 145, 0, -1, 10);
 
 // Define ship classes
-FletcherClass = new ShipClass("Fletcher Class", 50, 36, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes,torpedoes], 50);
+FletcherClass = new ShipClass("Fletcher Class", 50, 36, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes,torpedoes], 2);
 FubukiClass = new ShipClass("Fubuki Class", 50, 38, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes], 0);
 all_ship_classes = [FletcherClass, FubukiClass];
 
