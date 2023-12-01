@@ -11,7 +11,7 @@
   width: 50%;
   padding: 10px;
   overflow: hidden;
-  height: 300px;
+  height: 400px;
 }
 .row:after {
   content: "";
@@ -108,11 +108,12 @@ class Side {
     }
 }
 class ShipClass {
-	constructor(name, base_health, speed, weapons) {
+	constructor(name, base_health, speed, weapons, armor) {
     	this.name = name;
         this.base_health = base_health;
         this.speed = speed;
         this.weapons = weapons;
+        this.armor = armor;
         this.visibility = 10;
         this.profile = (100 * this.visibility)/(0.5 * this.speed + 20);
     }
@@ -125,10 +126,11 @@ class Ship {
     }
 }
 class Weapon {
-	constructor(name, hit_profile, light_attack, torpedo_attack) {
+	constructor(name, hit_profile, light_attack, light_piercing, torpedo_attack) {
     	this.name = name;
         this.hit_profile = hit_profile;
         this.light_attack = light_attack;
+        this.light_piercing = light_piercing;
         this.torpedo_attack = torpedo_attack;
     }
 }
@@ -166,20 +168,29 @@ function run_hour() {
       }
     }
 	// Display ship information
-	display_ships()
+	display_ships();
+    hour += 1;
 }
 
 function fire_at_target(ship, target) {
 	let hit_chance = 0.1;
+    let before_health = target.health;
     for (weapon of ship.design.weapons) {
-      if (target.health > 0 && Math.random() < hit_chance * Math.min((target.design.profile/weapon.hit_profile) ** 2, 1)) {
-        target.health -= weapon.light_attack;
+      if ((weapon.torpedo_attack == 0 || hour % 4 == 0) && target.health > 0 && Math.random() < hit_chance * Math.min((target.design.profile/weapon.hit_profile) ** 2, 1)) {
+      	if (target.armor > 0) {
+        	target.health -= weapon.light_attack * weapon.light_piercing / target.armor;
+            console.log(weapon.light_piercing / target.armor);
+        } else {
+        	target.health -= weapon.light_attack;
+        }
         target.health -= weapon.torpedo_attack;
+        let damage_done = before_health - target.health;
         if (target.health <= 0) {
           add_p_to_beginning("combat_log_column", ship.name + "'s " + weapon.name + " sunk " + target.name);
         } else {
-          add_p_to_beginning("combat_log_column", ship.name + "'s " + weapon.name + " hit " + target.name);
+          add_p_to_beginning("combat_log_column", ship.name + "'s " + weapon.name + " hit " + target.name + " for " + damage_done + " damage");
         }
+        before_health = target.health;
       }
     }
 }
@@ -223,9 +234,6 @@ function add_p_to_beginning(id_container, text) {
 }
 
 function add_ship(name, design, health, side_id) {
-	if (health == 0) {
-    	health = design.base_health;
-    }
 	sides[side_id-1].ships.push(new Ship(name, design, health));
     display_ships();
 }
@@ -237,13 +245,13 @@ function add_class(name, base_health, speed, light_gun_amount, torpedo_amount) {
     select.add(newOption, undefined);
 }
 
-// Define weaposn
-const light_guns = new Weapon("Light Gun", 45, 6, 0);
-const torpedoes = new Weapon("Torpedoes", 145, 0, 10);
+// Define weapons
+const light_guns = new Weapon("Light Gun", 45, 6, 1.5, 0);
+const torpedoes = new Weapon("Torpedoes", 145, 0, -1, 10);
 
 // Define ship classes
-FletcherClass = new ShipClass("Fletcher Class", 50, 36, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes,torpedoes]);
-FubukiClass = new ShipClass("Fubuki Class", 50, 38, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes]);
+FletcherClass = new ShipClass("Fletcher Class", 50, 36, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes,torpedoes], 50);
+FubukiClass = new ShipClass("Fubuki Class", 50, 38, [light_guns,light_guns,light_guns,light_guns,light_guns,torpedoes], 0);
 all_ship_classes = [FletcherClass, FubukiClass];
 
 // Define ships
@@ -258,6 +266,7 @@ const side_2 = new Side(2, "Japan", side_2_ships);
 const sides = [side_1, side_2];
 
 // Code to execute
+hour = 0
 document.getElementById("side_1_name_id").innerHTML = side_1.name;
 document.getElementById("side_2_name_id").innerHTML = side_2.name;
 display_ships()
