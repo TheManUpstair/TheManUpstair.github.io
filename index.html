@@ -108,7 +108,7 @@ class ShipClass {
 	constructor(name, hull, engine, weapons, armor) {
     	this.name = name;
         this.hull = hull;
-        this.speed = hull.speed * engine.speed_bonus;
+        this.speed = hull.speed * engine.speed_bonus * armor.speed_bonus;
         this.weapons = weapons;
         this.armor = armor;
         this.visibility = hull.visibility;
@@ -119,7 +119,7 @@ class Ship {
 	constructor(name, design) {
     	this.name = name;
         this.design = design;
-        this.health = design.hull.health;
+        this.health = design.hull.health * design.armor.hp_bonus;
     }
 }
 class Weapon {
@@ -145,6 +145,14 @@ class Engine {
 	constructor(name, speed_bonus) {
     	this.name = name;
         this.speed_bonus = speed_bonus;
+    }
+}
+class Armor {
+	constructor(name, armor, speed_bonus, hp_bonus) {
+    	this.name = name;
+        this.armor = armor;
+        this.speed_bonus = speed_bonus;
+        this.hp_bonus = hp_bonus;
     }
 }
 
@@ -190,8 +198,8 @@ function fire_at_target(ship, target) {
     for (weapon of ship.design.weapons) {
       if ((weapon.torpedo_attack == 0 || hour % 4 == 0) && target.health > 0 && Math.random() < hit_chance * Math.min((target.design.profile/weapon.hit_profile) ** 2, 1)) {
       	// Light attack
-      	if (target.design.armor > 0) {
-        	target.health -= weapon.light_attack * weapon.light_piercing / target.design.armor;
+      	if (target.design.armor.armor > 0) {
+        	target.health -= weapon.light_attack * weapon.light_piercing / target.design.armor.armor;
         } else {
         	target.health -= weapon.light_attack;
         }
@@ -283,9 +291,12 @@ const torpedo_launcher_2 = new Weapon("Torpedoes", 145, 0, 0, 24);
 const torpedo_launcher_3 = new Weapon("Torpedoes", 145, 0, 0, 30);
 const torpedo_launcher_4 = new Weapon("Torpedoes", 145, 0, 0, 36);
 
+// Define armors
+const destroyer_armor = new Armor("Destroyer Armor", 0, 1, 1);
+
 // Define ship classes
-FletcherClass = new ShipClass("Fletcher Class", destroyer_1936_hull, light_engine_2, [light_battery_3,light_battery_3,light_battery_3,torpedo_launcher_1], 0);
-FubukiClass = new ShipClass("Fubuki Class", early_destroyer_hull, light_engine_3, [light_battery_2,light_battery_2,torpedo_launcher_2,torpedo_launcher_2,torpedo_launcher_2], 0);
+FletcherClass = new ShipClass("Fletcher Class", destroyer_1936_hull, light_engine_2, [light_battery_3,light_battery_3,light_battery_3,torpedo_launcher_1], destroyer_armor);
+FubukiClass = new ShipClass("Fubuki Class", early_destroyer_hull, light_engine_3, [light_battery_2,light_battery_2,torpedo_launcher_2,torpedo_launcher_2,torpedo_launcher_2], destroyer_armor);
 all_ship_classes = [FletcherClass, FubukiClass];
 
 // Define ships
