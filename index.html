@@ -42,7 +42,8 @@ h3 {
 </div>
 <button type="button" onclick="run_hour()">Do hour</button><br>
 <button type="button" onclick="run_simulation()">Run simulation</button><br>
-<button type="button" onclick="clear_ships()">Clear ships</button>
+<button type="button" onclick="clear_ships()">Clear ships</button><br>
+<button type="button" onclick="clear_combat_log()">Clear combat log</button>
 </div>
 <div class="column">
 <h3>Combat log</h3>
@@ -238,6 +239,10 @@ function clear_ships() {
 	side_1.ships = [];
     side_2.ships = [];
     display_ships();
+}
+
+function clear_combat_log() {
+  document.getElementById("combat_log_column").innerHTML = "";
 }
 
 function add_p(id, text) {
