@@ -41,7 +41,8 @@ h3 {
 <p id="side_2_ship_list"></p>
 </div>
 <button type="button" onclick="run_hour()">Do hour</button><br>
-<button type="button" onclick="run_simulation()">Run simulation</button>
+<button type="button" onclick="run_simulation()">Run simulation</button><br>
+<button type="button" onclick="clear_ships()">Clear ships</button>
 </div>
 <div class="column">
 <h3>Combat log</h3>
@@ -231,6 +232,12 @@ function display_ships() {
       element.appendChild(para);
     }
   }
+}
+
+function clear_ships() {
+	side_1.ships = [];
+    side_2.ships = [];
+    display_ships();
 }
 
 function add_p(id, text) {
