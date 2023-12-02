@@ -70,29 +70,19 @@ h3 {
 <h3>Create a class</h3>
 <label>Name:</label>
 <input type="text" id="class_name_text"> <br>
-<label>Health:</label>
-<input type="text" id="class_health_text"> <br>
-<label>Speed:</label>
-<input type="text" id="class_speed_text"> <br>
-<label>Light guns:</label>
-<select id="class_light_guns_choice">
-<option value="0">0</option>
-<option value="1">1</option>
-<option value="2">2</option>
-<option value="3">3</option>
-<option value="4">4</option>
-<option value="5">5</option>
+<label>Hull:</label>
+<select id="class_hull_choice">
 </select><br>
-<label>Torpedoes:</label>
-<select id="class_torpedoes_choice">
-<option value="0">0</option>
-<option value="1">1</option>
-<option value="2">2</option>
-<option value="3">3</option>
-<option value="4">4</option>
-<option value="5">5</option>
+<label>Engine:</label>
+<select id="class_engine_choice">
 </select><br>
-<button type="button" onclick="add_class(document.getElementById('class_name_text').value,document.getElementById('class_health_text').value, document.getElementById('class_speed_text').value, document.getElementById('class_light_guns_choice').value, document.getElementById('class_torpedoes_choice').value)">Add</button>
+<label>Weapons:</label>
+<select id="class_weapons_choice">
+</select><br>
+<label>Armor:</label>
+<select id="class_armor_choice">
+</select><br>
+<button type="button" onclick="add_class(document.getElementById('class_name_text').value,document.getElementById('class_hull_choice').value, document.getElementById('class_engine_choice').value, document.getElementById('class_weapons_choice').value, document.getElementById('class_armor_choice').value)">Add</button>
 </div>
 </div>
 <script>
@@ -162,8 +152,10 @@ function get_random(list) {
 }
 
 function run_simulation() {
-	while (side_1.ships.length > 0 && side_2.ships.length > 0) {
+	let count = 10000; // 1.1 years, oughta be enough
+	while ((side_1.ships.length > 0 && side_2.ships.length > 0) || count > 0) {
     	run_hour();
+        count -= 1;
     }
 }
 
@@ -262,37 +254,61 @@ function add_ship(name, design, side_id) {
     display_ships();
 }
 
-function add_class(name, base_health, speed, light_gun_amount, torpedo_amount) {
-	all_ship_classes.push(new ShipClass(name, Number(base_health), Number(speed), []));
+function add_class(name, hull, engine, weapons, armor) {
+	all_ship_classes.push(new ShipClass(name, all_hulls[hull], all_engines[engine], [all_weapons[weapons]], all_armors[armor]));
     let newOption = new Option(name, all_ship_classes.length-1);
     const select = document.querySelector("#ship_design_choice");
     select.add(newOption, undefined);
 }
 
 // Define hulls
-const early_destroyer_hull = new Hull("Early", 32, 1500, 25, 0.8, 10);
+const early_destroyer_hull = new Hull("Early Destroyer Hull", 32, 1500, 25, 0.8, 10);
 const destroyer_1936_hull = new Hull("1936 Destroyer Hull", 32, 1800, 40, 0.85, 10);
 const destroyer_1940_hull = new Hull("1940 Destroyer Hull", 32, 2000, 50, 0.9, 10);
 const destroyer_1944_hull = new Hull("1944 Destroyer Hull", 32, 2500, 60, 0.92, 10);
+const all_hulls = [early_destroyer_hull, destroyer_1936_hull, destroyer_1940_hull, destroyer_1944_hull];
+for (let i = 0; i < all_hulls.length; i++) {
+	let newOption = new Option(all_hulls[i].name, i);
+    let select = document.querySelector("#class_hull_choice");
+    select.add(newOption, undefined);
+}
 
 // Define engines
 const light_engine_1 = new Engine("Light Engine I", 1.1);
 const light_engine_2 = new Engine("Light Engine II", 1.15);
 const light_engine_3 = new Engine("Light Engine III", 1.2);
 const light_engine_4 = new Engine("Light Engine IV", 1.25);
+const all_engines = [light_engine_1, light_engine_2, light_engine_3, light_engine_4];
+for (let i = 0; i < all_engines.length; i++) {
+	let newOption = new Option(all_engines[i].name, i);
+    let select = document.querySelector("#class_engine_choice");
+    select.add(newOption, undefined);
+}
 
 // Define weapons
-const light_battery_1 = new Weapon("Light Gun", 45, 1, 1, 0);
-const light_battery_2 = new Weapon("Light Gun", 45, 1.5, 2, 0);
-const light_battery_3 = new Weapon("Light Gun", 45, 2, 2.5, 0);
-const light_battery_4 = new Weapon("Light Gun", 45, 3, 2.5, 0);
-const torpedo_launcher_1 = new Weapon("Torpedoes", 145, 0, 0, 18);
-const torpedo_launcher_2 = new Weapon("Torpedoes", 145, 0, 0, 24);
-const torpedo_launcher_3 = new Weapon("Torpedoes", 145, 0, 0, 30);
-const torpedo_launcher_4 = new Weapon("Torpedoes", 145, 0, 0, 36);
+const light_battery_1 = new Weapon("Light Battery I", 45, 1, 1, 0);
+const light_battery_2 = new Weapon("Light Battery II", 45, 1.5, 2, 0);
+const light_battery_3 = new Weapon("Light Battery III", 45, 2, 2.5, 0);
+const light_battery_4 = new Weapon("Light Battery IV", 45, 3, 2.5, 0);
+const torpedo_launcher_1 = new Weapon("Torpedoes I", 145, 0, 0, 18);
+const torpedo_launcher_2 = new Weapon("Torpedoes II", 145, 0, 0, 24);
+const torpedo_launcher_3 = new Weapon("Torpedoes III", 145, 0, 0, 30);
+const torpedo_launcher_4 = new Weapon("Torpedoes IV", 145, 0, 0, 36);
+const all_weapons = [light_battery_1, light_battery_2, light_battery_3, light_battery_4, torpedo_launcher_1, torpedo_launcher_2, torpedo_launcher_3, torpedo_launcher_4];
+for (let i = 0; i < all_weapons.length; i++) {
+	let newOption = new Option(all_weapons[i].name, i);
+    let select = document.querySelector("#class_weapons_choice");
+    select.add(newOption, undefined);
+}
 
 // Define armors
 const destroyer_armor = new Armor("Destroyer Armor", 0, 1, 1);
+const all_armors = [destroyer_armor];
+for (let i = 0; i < all_armors.length; i++) {
+	let newOption = new Option(all_armors[i].name, i);
+    let select = document.querySelector("#class_armor_choice");
+    select.add(newOption, undefined);
+}
 
 // Define ship classes
 FletcherClass = new ShipClass("Fletcher Class", destroyer_1936_hull, light_engine_2, [light_battery_3,light_battery_3,light_battery_3,torpedo_launcher_1], destroyer_armor);
