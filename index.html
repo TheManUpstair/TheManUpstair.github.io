@@ -73,7 +73,7 @@ h3 {
 <label>Name:</label>
 <input type="text" id="class_name_text"> <br>
 <label>Hull:</label>
-<select id="class_hull_choice">
+<select id="class_hull_choice" onchange="refresh_ship_creator_options()">
 </select><br>
 <label>Engine:</label>
 <select id="class_engine_choice">
@@ -94,6 +94,14 @@ class Side {
     	this.id = id;
     	this.name = name;
     	this.ships = ships;
+    }
+}
+class ShipType {
+	constructor(name, possible_engines, possible_armors, weapons_slots) {
+    	this.name = name;
+        this.possible_engines = possible_engines;
+        this.possible_armors = possible_armors;
+        this.weapons_slots = weapons_slots;
     }
 }
 class ShipClass {
@@ -124,8 +132,9 @@ class Weapon {
     }
 }
 class Hull {
-	constructor(name, speed, range, health, reliability, visibility) {
+	constructor(name, ship_type, speed, range, health, reliability, visibility) {
     	this.name = name;
+        this.ship_type = ship_type;
     	this.speed = speed;
         this.range = range;
         this.health = health;
@@ -269,25 +278,24 @@ function add_ship(name, design, side_id) {
 function add_class(name, hull, engine, weapons, armor) {
 	all_ship_classes.push(new ShipClass(name, all_hulls[hull], all_engines[engine], [all_weapons[weapons], all_weapons[weapons], all_weapons[weapons], all_weapons[weapons], all_weapons[weapons]], all_armors[armor]));
     let newOption = new Option(name, all_ship_classes.length-1);
-    const select = document.querySelector("#ship_design_choice");
+    let select = document.querySelector("#ship_design_choice");
     select.add(newOption, undefined);
 }
 
-// Define hulls
-const early_destroyer_hull = new Hull("Early Destroyer Hull", 32, 1500, 25, 0.8, 10);
-const destroyer_1936_hull = new Hull("1936 Destroyer Hull", 32, 1800, 40, 0.85, 10);
-const destroyer_1940_hull = new Hull("1940 Destroyer Hull", 32, 2000, 50, 0.9, 10);
-const destroyer_1944_hull = new Hull("1944 Destroyer Hull", 32, 2500, 60, 0.92, 10);
-const early_crusier_hull = new Hull("Early Crusier Hull", 27, 2500, 100, 0.8, 15);
-const crusier_hull_1936 = new Hull("Crusier Hull 1936", 30, 3000, 110, 0.85, 15);
-const crusier_hull_1940 = new Hull("Crusier Hull 1940", 32, 4000, 120, 0.9, 15);
-const crusier_hull_1944 = new Hull("Crusier Hull 1944", 33, 4500, 130, 0.95, 15);
-const coastal_defence_ship = new Hull("Coastal Defence Ship", 20, 1500, 100, 0.8, 20);
-const all_hulls = [early_destroyer_hull, destroyer_1936_hull, destroyer_1940_hull, destroyer_1944_hull, early_crusier_hull, crusier_hull_1936, crusier_hull_1940, crusier_hull_1944, coastal_defence_ship];
-for (let i = 0; i < all_hulls.length; i++) {
-	let newOption = new Option(all_hulls[i].name, i);
-    let select = document.querySelector("#class_hull_choice");
-    select.add(newOption, undefined);
+function refresh_ship_creator_options() {
+	document.getElementById("class_engine_choice").innerHTML = "";
+    document.getElementById("class_armor_choice").innerHTML = "";
+    let current_ship_type = all_hulls[document.getElementById("class_hull_choice").value].ship_type;
+    for (let i = 0; i < current_ship_type.possible_engines.length; i++) {
+      let newOption = new Option(current_ship_type.possible_engines[i].name, i);
+      let select = document.querySelector("#class_engine_choice");
+      select.add(newOption, undefined);
+    }
+    for (let i = 0; i < current_ship_type.possible_armors.length; i++) {
+      let newOption = new Option(current_ship_type.possible_armors[i].name, i);
+      let select = document.querySelector("#class_armor_choice");
+      select.add(newOption, undefined);
+    }
 }
 
 // Define engines
@@ -300,11 +308,6 @@ const crusier_engine_2 = new Engine("Crusier Engine II", 1.3);
 const crusier_engine_3 = new Engine("Crusier Engine III", 1.35);
 const crusier_engine_4 = new Engine("Crusier Engine IV", 1.4);
 const all_engines = [light_engine_1, light_engine_2, light_engine_3, light_engine_4, crusier_engine_1, crusier_engine_2, crusier_engine_3, crusier_engine_4];
-for (let i = 0; i < all_engines.length; i++) {
-	let newOption = new Option(all_engines[i].name, i);
-    let select = document.querySelector("#class_engine_choice");
-    select.add(newOption, undefined);
-}
 
 // Define weapons
 const light_battery_1 = new Weapon("Light Battery I", 45, 1, 1, 0);
@@ -329,11 +332,30 @@ const crusier_armor_2 = new Armor("Crusier Armor II", 8, 1.05, 0.925);
 const crusier_armor_3 = new Armor("Crusier Armor III", 10, 1.1, 0.9);
 const crusier_armor_4 = new Armor("Crusier Armor IV", 12, 1.15, 0.875);
 const all_armors = [destroyer_armor, crusier_armor_1, crusier_armor_2, crusier_armor_3, crusier_armor_4];
-for (let i = 0; i < all_armors.length; i++) {
-	let newOption = new Option(all_armors[i].name, i);
-    let select = document.querySelector("#class_armor_choice");
+
+// Define types
+destroyer_type = new ShipType("Destroyer", [light_engine_1, light_engine_2, light_engine_3, light_engine_4], [destroyer_armor], 1);
+crusier_type = new ShipType("Crusier", [crusier_engine_1, crusier_engine_2, crusier_engine_3, crusier_engine_4], [crusier_armor_1, crusier_armor_2, crusier_armor_3, crusier_armor_4], 1);
+
+// Define hulls
+const early_destroyer_hull = new Hull("Early Destroyer Hull", destroyer_type, 32, 1500, 25, 0.8, 10);
+const destroyer_1936_hull = new Hull("1936 Destroyer Hull", destroyer_type, 32, 1800, 40, 0.85, 10);
+const destroyer_1940_hull = new Hull("1940 Destroyer Hull", destroyer_type, 32, 2000, 50, 0.9, 10);
+const destroyer_1944_hull = new Hull("1944 Destroyer Hull", destroyer_type, 32, 2500, 60, 0.92, 10);
+const early_crusier_hull = new Hull("Early Crusier Hull", crusier_type, 27, 2500, 100, 0.8, 15);
+const crusier_hull_1936 = new Hull("Crusier Hull 1936", crusier_type, 30, 3000, 110, 0.85, 15);
+const crusier_hull_1940 = new Hull("Crusier Hull 1940", crusier_type, 32, 4000, 120, 0.9, 15);
+const crusier_hull_1944 = new Hull("Crusier Hull 1944", crusier_type, 33, 4500, 130, 0.95, 15);
+const coastal_defence_ship = new Hull("Coastal Defence Ship", crusier_type, 20, 1500, 100, 0.8, 20);
+const all_hulls = [early_destroyer_hull, destroyer_1936_hull, destroyer_1940_hull, destroyer_1944_hull, early_crusier_hull, crusier_hull_1936, crusier_hull_1940, crusier_hull_1944, coastal_defence_ship];
+for (let i = 0; i < all_hulls.length; i++) {
+	let newOption = new Option(all_hulls[i].name, i);
+    let select = document.querySelector("#class_hull_choice");
     select.add(newOption, undefined);
 }
+
+// Display options for the class creator
+refresh_ship_creator_options();
 
 // Define ship classes
 FletcherClass = new ShipClass("Fletcher Class", destroyer_1936_hull, light_engine_2, [light_battery_3,light_battery_3,light_battery_3,torpedo_launcher_1], destroyer_armor);
