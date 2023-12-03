@@ -5,9 +5,16 @@
 * {
   box-sizing: border-box;
 }
-.column {
+.column_of_two {
   float: left;
   width: 50%;
+  padding: 10px;
+  overflow: hidden;
+  height: 400px;
+}
+.column_of_three {
+  float: left;
+  width: 33%;
   padding: 10px;
   overflow: hidden;
   height: 400px;
@@ -31,7 +38,7 @@ h3 {
 </head>
 <body>
 <div class="row">
-<div class="column">
+<div class="column_of_two">
 <h3 id="side_1_name_id"></h3>
 <div>
 <p id="side_1_ship_list"></p>
@@ -45,14 +52,14 @@ h3 {
 <button type="button" onclick="clear_ships()">Clear ships</button><br>
 <button type="button" onclick="clear_combat_log()">Clear combat log</button>
 </div>
-<div class="column">
+<div class="column_of_two">
 <h3>Combat log</h3>
 <div id="combat_log_column">
 </div>
 </div>
 </div>
 <div class="row">
-<div class="column">
+<div class="column_of_three">
 <h3>Add a ship</h3>
 <label>Name:</label>
 <input type="text" id="ship_name_text"> <br>
@@ -68,7 +75,7 @@ h3 {
 </select><br>
 <button type="button" onclick="add_ship(document.getElementById('ship_name_text').value, all_ship_classes[document.getElementById('ship_design_choice').value], document.getElementById('ship_side_choice').value)">Add</button>
 </div>
-<div class="column">
+<div class="column_of_three">
 <h3>Create a class</h3>
 <label>Name:</label>
 <input type="text" id="class_name_text"> <br>
@@ -85,6 +92,12 @@ h3 {
 <select id="class_armor_choice">
 </select><br>
 <button type="button" onclick="add_class(document.getElementById('class_name_text').value,document.getElementById('class_hull_choice').value, document.getElementById('class_engine_choice').value, document.getElementById('class_weapons_choice').value, document.getElementById('class_armor_choice').value)">Add</button>
+</div>
+<div class="column_of_three">
+<h3>Load and save</h3>
+<button type="button" onclick="save_current_ships()">Save ships</button>
+<button type="button" onclick="load_previous_ships()">Load ships</button><br>
+<button type="button" onclick="export_to_csv()">Export</button>
 </div>
 </div>
 <script>
@@ -173,12 +186,16 @@ function run_simulation() {
 function run_hour() {
 	// Ships fire -- note that this is biased towards side 1
 	for (let ship of side_1.ships) {
-    	let target = get_random(side_2.ships);
-        fire_at_target(ship, target);
+    	if (side_2.ships.length > 0) {
+          let target = get_random(side_2.ships);
+          fire_at_target(ship, target);
+        }
     }
     for (let ship of side_2.ships) {
-    	let target = get_random(side_1.ships);
-        fire_at_target(ship, target);
+    	if (side_1.ships.length > 0) {
+          let target = get_random(side_1.ships);
+          fire_at_target(ship, target);
+        }
     }
 	// Remove sunken ships
     for (let s of sides) {
@@ -296,6 +313,57 @@ function refresh_ship_creator_options() {
       let select = document.querySelector("#class_armor_choice");
       select.add(newOption, undefined);
     }
+}
+
+let ships_from_side_1 = [];
+let ships_from_side_2 = [];
+function save_current_ships() {
+	ships_from_side_1 = [];
+    ships_from_side_2 = [];
+	for (let s of side_1.ships) {
+    	ships_from_side_1.push(new Ship(s.name, s.design));
+    }
+    for (let s of side_2.ships) {
+    	ships_from_side_2.push(new Ship(s.name, s.design));
+    }
+}
+
+function load_previous_ships() {
+	side_1.ships = [];
+    side_2.ships = [];
+    for (let s of ships_from_side_1) {
+    	side_1.ships.push(new Ship(s.name, s.design));
+    }
+    for (let s of ships_from_side_2) {
+    	side_2.ships.push(new Ship(s.name, s.design));
+    }
+    display_ships();
+}
+
+function export_to_csv() {
+	const side_1_ship_data = [];
+    const side_2_ship_data = [];
+    for (let s of side_1.ships) {
+    	side_1_ship_data.push(s.name, s.design);
+    }
+    for (let s of side_2.ships) {
+    	side_2_ship_data.push(s.name, s.design);
+    }
+	const data = [
+    	side_1_ship_data,
+        side_2_ship_data
+    ];
+    let csvContent = "data:text/csv;charset=utf-8,";
+    data.forEach(function(rowArray) {
+        let row = rowArray.join(",");
+        csvContent += row + "\r\n";
+    });
+    var encodedUri = encodeURI(csvContent);
+    var link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "ship_text.csv");
+    document.body.appendChild(link);
+    link.click();
 }
 
 // Define engines
