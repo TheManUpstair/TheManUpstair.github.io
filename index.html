@@ -79,18 +79,10 @@ h3 {
 <h3>Create a class</h3>
 <label>Name:</label>
 <input type="text" id="class_name_text"> <br>
-<div id ="class_select_choices">
 <label>Hull:</label>
 <select id="class_hull_choice" onchange="refresh_ship_creator_options()">
 </select><br>
-<label>Engine:</label>
-<select id="class_engine_choice">
-</select><br>
-<label>Weapons:</label>
-<select id="class_weapons_choice">
-</select><br>
-<label>Armor:</label>
-<select id="class_armor_choice">
+<div id ="class_select_choices">
 </select>
 </div>
 <button type="button" onclick="add_class(document.getElementById('class_name_text').value,document.getElementById('class_hull_choice').value, document.getElementById('class_engine_choice').value, document.getElementById('class_weapons_choice').value, document.getElementById('class_armor_choice').value)">Add</button>
@@ -322,6 +314,12 @@ function refresh_ship_creator_options() {
                 options.push(i);
             }
         }
+        if (slot.weapons_allowed == true) {
+        	for (let i = 0; i < all_weapons.length; i++) {
+            	names.push(all_weapons[i].name);
+                options.push(i);
+            }
+        }
         if (slot.armor_allowed == true) {
         	for (let i = 0; i < current_hull.ship_type.possible_armors.length; i++) {
             	names.push(current_hull.ship_type.possible_armors[i].name);
@@ -335,14 +333,18 @@ function refresh_ship_creator_options() {
 }
 
 function add_select(name, option_names, option_values, parent_div_id, new_select_id) {
+    let parent_element = document.getElementById(parent_div_id);
+	let new_label = document.createElement("Label");
+    new_label.innerHTML = name + ": ";
+    parent_element.appendChild(new_label);
 	let new_select = document.createElement("select");
     new_select.id = new_select_id;
-    let element = document.getElementById(parent_div_id);
-    element.appendChild(new_select);
+    parent_element.appendChild(new_select);
     for (let i = 0; i < option_values.length; i++) {
       let new_option = new Option(option_names[i], option_values[i]);
       new_select.appendChild(new_option);
-  }
+    }
+    parent_element.appendChild(document.createElement("br"));
 }
 
 function add_option(name, value, select_id) {
@@ -423,11 +425,6 @@ const torpedo_launcher_2 = new Weapon("Torpedoes II", 145, 0, 0, 24);
 const torpedo_launcher_3 = new Weapon("Torpedoes III", 145, 0, 0, 30);
 const torpedo_launcher_4 = new Weapon("Torpedoes IV", 145, 0, 0, 36);
 const all_weapons = [light_battery_1, light_battery_2, light_battery_3, light_battery_4, torpedo_launcher_1, torpedo_launcher_2, torpedo_launcher_3, torpedo_launcher_4];
-for (let i = 0; i < all_weapons.length; i++) {
-	let newOption = new Option(all_weapons[i].name, i);
-    let select = document.querySelector("#class_weapons_choice");
-    select.add(newOption, undefined);
-}
 
 // Define armors
 const destroyer_armor = new Armor("Destroyer Armor", 0, 1, 1);
