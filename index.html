@@ -82,9 +82,15 @@ h3 {
 <label>Hull:</label>
 <select id="class_hull_choice" onchange="refresh_ship_creator_options()">
 </select><br>
-<div id ="class_select_choices">
-</select>
-</div>
+<label>Engine:</label>
+<select id="class_engine_choice">
+</select><br>
+<label>Weapons:</label>
+<select id="class_weapons_choice">
+</select><br>
+<label>Armor:</label>
+<select id="class_armor_choice">
+</select><br>
 <button type="button" onclick="add_class(document.getElementById('class_name_text').value,document.getElementById('class_hull_choice').value, document.getElementById('class_engine_choice').value, document.getElementById('class_weapons_choice').value, document.getElementById('class_armor_choice').value)">Add</button>
 </div>
 <div class="column_of_three">
@@ -139,7 +145,7 @@ class Weapon {
     }
 }
 class Hull {
-	constructor(name, ship_type, speed, range, health, reliability, visibility, slots) {
+	constructor(name, ship_type, speed, range, health, reliability, visibility) {
     	this.name = name;
         this.ship_type = ship_type;
     	this.speed = speed;
@@ -147,15 +153,6 @@ class Hull {
         this.health = health;
         this.reliability = reliability;
         this.visibility = visibility;
-        this.slots = slots;
-    }
-}
-class Slot {
-	constructor(name, engines_allowed, weapons_allowed, armor_allowed) {
-    	this.name = name;
-        this.engines_allowed = engines_allowed;
-        this.weapons_allowed = weapons_allowed;
-        this.armor_allowed = armor_allowed;
     }
 }
 class Engine {
@@ -303,54 +300,19 @@ function add_class(name, hull, engine, weapons, armor) {
 }
 
 function refresh_ship_creator_options() {
-    let current_hull = all_hulls[document.getElementById("class_hull_choice").value];
-    document.getElementById("class_select_choices").innerHTML = "";
-    let names = [];
-    let options = [];
-    for (let slot of current_hull.slots) {
-    	if (slot.engines_allowed == true) {
-        	for (let i = 0; i < current_hull.ship_type.possible_engines.length; i++) {
-            	names.push(current_hull.ship_type.possible_engines[i].name);
-                options.push(i);
-            }
-        }
-        if (slot.weapons_allowed == true) {
-        	for (let i = 0; i < all_weapons.length; i++) {
-            	names.push(all_weapons[i].name);
-                options.push(i);
-            }
-        }
-        if (slot.armor_allowed == true) {
-        	for (let i = 0; i < current_hull.ship_type.possible_armors.length; i++) {
-            	names.push(current_hull.ship_type.possible_armors[i].name);
-                options.push(i);
-            }
-        }
-        add_select(slot.name, names, options, "class_select_choices", slot.name);
-        names = [];
-        options = [];
+	document.getElementById("class_engine_choice").innerHTML = "";
+    document.getElementById("class_armor_choice").innerHTML = "";
+    let current_ship_type = all_hulls[document.getElementById("class_hull_choice").value].ship_type;
+    for (let i = 0; i < current_ship_type.possible_engines.length; i++) {
+      let newOption = new Option(current_ship_type.possible_engines[i].name, i);
+      let select = document.querySelector("#class_engine_choice");
+      select.add(newOption, undefined);
     }
-}
-
-function add_select(name, option_names, option_values, parent_div_id, new_select_id) {
-    let parent_element = document.getElementById(parent_div_id);
-	let new_label = document.createElement("Label");
-    new_label.innerHTML = name + ": ";
-    parent_element.appendChild(new_label);
-	let new_select = document.createElement("select");
-    new_select.id = new_select_id;
-    parent_element.appendChild(new_select);
-    for (let i = 0; i < option_values.length; i++) {
-      let new_option = new Option(option_names[i], option_values[i]);
-      new_select.appendChild(new_option);
+    for (let i = 0; i < current_ship_type.possible_armors.length; i++) {
+      let newOption = new Option(current_ship_type.possible_armors[i].name, i);
+      let select = document.querySelector("#class_armor_choice");
+      select.add(newOption, undefined);
     }
-    parent_element.appendChild(document.createElement("br"));
-}
-
-function add_option(name, value, select_id) {
-	let newOption = new Option(name, value);
-    let select = document.querySelector(select_id);
-    select.add(newOption, undefined);
 }
 
 let ships_from_side_1 = [];
@@ -425,6 +387,11 @@ const torpedo_launcher_2 = new Weapon("Torpedoes II", 145, 0, 0, 24);
 const torpedo_launcher_3 = new Weapon("Torpedoes III", 145, 0, 0, 30);
 const torpedo_launcher_4 = new Weapon("Torpedoes IV", 145, 0, 0, 36);
 const all_weapons = [light_battery_1, light_battery_2, light_battery_3, light_battery_4, torpedo_launcher_1, torpedo_launcher_2, torpedo_launcher_3, torpedo_launcher_4];
+for (let i = 0; i < all_weapons.length; i++) {
+	let newOption = new Option(all_weapons[i].name, i);
+    let select = document.querySelector("#class_weapons_choice");
+    select.add(newOption, undefined);
+}
 
 // Define armors
 const destroyer_armor = new Armor("Destroyer Armor", 0, 1, 1);
@@ -438,21 +405,16 @@ const all_armors = [destroyer_armor, crusier_armor_1, crusier_armor_2, crusier_a
 destroyer_type = new ShipType("Destroyer", [light_engine_1, light_engine_2, light_engine_3, light_engine_4], [destroyer_armor], 1);
 crusier_type = new ShipType("Crusier", [crusier_engine_1, crusier_engine_2, crusier_engine_3, crusier_engine_4], [crusier_armor_1, crusier_armor_2, crusier_armor_3, crusier_armor_4], 1);
 
-// Define slots
-engine_slot = new Slot("Engine", true, false, false,);
-weapons_slot = new Slot("Weapons", false, true, false);
-armor_slot = new Slot("Armor", false, false, true);
-
 // Define hulls
-const early_destroyer_hull = new Hull("Early Destroyer Hull", destroyer_type, 32, 1500, 25, 0.8, 10, [weapons_slot, engine_slot, armor_slot]);
-const destroyer_1936_hull = new Hull("1936 Destroyer Hull", destroyer_type, 32, 1800, 40, 0.85, 10, [weapons_slot, engine_slot, armor_slot]);
-const destroyer_1940_hull = new Hull("1940 Destroyer Hull", destroyer_type, 32, 2000, 50, 0.9, 10, [weapons_slot, engine_slot, armor_slot]);
-const destroyer_1944_hull = new Hull("1944 Destroyer Hull", destroyer_type, 32, 2500, 60, 0.92, 10, [weapons_slot, engine_slot, armor_slot]);
-const early_crusier_hull = new Hull("Early Crusier Hull", crusier_type, 27, 2500, 100, 0.8, 15, [weapons_slot, engine_slot, armor_slot]);
-const crusier_hull_1936 = new Hull("Crusier Hull 1936", crusier_type, 30, 3000, 110, 0.85, 15, [weapons_slot, engine_slot, armor_slot]);
-const crusier_hull_1940 = new Hull("Crusier Hull 1940", crusier_type, 32, 4000, 120, 0.9, 15, [weapons_slot, engine_slot, armor_slot]);
-const crusier_hull_1944 = new Hull("Crusier Hull 1944", crusier_type, 33, 4500, 130, 0.95, 15, [weapons_slot, engine_slot, armor_slot]);
-const coastal_defence_ship = new Hull("Coastal Defence Ship", crusier_type, 20, 1500, 100, 0.8, 20, [weapons_slot, engine_slot, armor_slot]);
+const early_destroyer_hull = new Hull("Early Destroyer Hull", destroyer_type, 32, 1500, 25, 0.8, 10);
+const destroyer_1936_hull = new Hull("1936 Destroyer Hull", destroyer_type, 32, 1800, 40, 0.85, 10);
+const destroyer_1940_hull = new Hull("1940 Destroyer Hull", destroyer_type, 32, 2000, 50, 0.9, 10);
+const destroyer_1944_hull = new Hull("1944 Destroyer Hull", destroyer_type, 32, 2500, 60, 0.92, 10);
+const early_crusier_hull = new Hull("Early Crusier Hull", crusier_type, 27, 2500, 100, 0.8, 15);
+const crusier_hull_1936 = new Hull("Crusier Hull 1936", crusier_type, 30, 3000, 110, 0.85, 15);
+const crusier_hull_1940 = new Hull("Crusier Hull 1940", crusier_type, 32, 4000, 120, 0.9, 15);
+const crusier_hull_1944 = new Hull("Crusier Hull 1944", crusier_type, 33, 4500, 130, 0.95, 15);
+const coastal_defence_ship = new Hull("Coastal Defence Ship", crusier_type, 20, 1500, 100, 0.8, 20);
 const all_hulls = [early_destroyer_hull, destroyer_1936_hull, destroyer_1940_hull, destroyer_1944_hull, early_crusier_hull, crusier_hull_1936, crusier_hull_1940, crusier_hull_1944, coastal_defence_ship];
 for (let i = 0; i < all_hulls.length; i++) {
 	let newOption = new Option(all_hulls[i].name, i);
