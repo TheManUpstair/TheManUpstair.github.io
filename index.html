@@ -85,9 +85,8 @@ h3 {
 <label>Engine:</label>
 <select id="class_engine_choice">
 </select><br>
-<label>Weapons:</label>
-<select id="class_weapons_choice">
-</select><br>
+<div id="class_weapons_choices">
+</div>
 <label>Armor:</label>
 <select id="class_armor_choice">
 </select><br>
@@ -302,6 +301,7 @@ function add_class(name, hull, engine, weapons, armor) {
 function refresh_ship_creator_options() {
 	document.getElementById("class_engine_choice").innerHTML = "";
     document.getElementById("class_armor_choice").innerHTML = "";
+    document.getElementById("class_weapons_choices").innerHTML = "";
     let current_ship_type = all_hulls[document.getElementById("class_hull_choice").value].ship_type;
     for (let i = 0; i < current_ship_type.possible_engines.length; i++) {
       let newOption = new Option(current_ship_type.possible_engines[i].name, i);
@@ -312,6 +312,9 @@ function refresh_ship_creator_options() {
       let newOption = new Option(current_ship_type.possible_armors[i].name, i);
       let select = document.querySelector("#class_armor_choice");
       select.add(newOption, undefined);
+    }
+    for (let i = 0; i < current_ship_type.weapons_slots; i++) {
+    	add_select("Weapons " + (i+1), all_weapon_names, all_weapon_values, "class_weapons_choices", "weapons_class_select_" + i)
     }
 }
 
@@ -366,6 +369,23 @@ function export_to_csv() {
     link.click();
 }
 
+function add_select(name, option_names, option_values, parent_div_id, new_select_id) {
+    let parent_element = document.getElementById(parent_div_id);
+    let new_label = document.createElement("Label");
+    new_label.innerHTML = name + ": ";
+    parent_element.appendChild(new_label);
+    let new_select = document.createElement("select");
+    new_select.id = new_select_id;
+    let element = document.getElementById(parent_div_id);
+    element.appendChild(new_select);
+    parent_element.appendChild(new_select);
+    for (let i = 0; i < option_values.length; i++) {
+      let new_option = new Option(option_names[i], option_values[i]);
+      new_select.appendChild(new_option);
+    }
+    parent_element.appendChild(document.createElement("br"));
+}
+
 // Define engines
 const light_engine_1 = new Engine("Light Engine I", 1.1);
 const light_engine_2 = new Engine("Light Engine II", 1.15);
@@ -387,10 +407,11 @@ const torpedo_launcher_2 = new Weapon("Torpedoes II", 145, 0, 0, 24);
 const torpedo_launcher_3 = new Weapon("Torpedoes III", 145, 0, 0, 30);
 const torpedo_launcher_4 = new Weapon("Torpedoes IV", 145, 0, 0, 36);
 const all_weapons = [light_battery_1, light_battery_2, light_battery_3, light_battery_4, torpedo_launcher_1, torpedo_launcher_2, torpedo_launcher_3, torpedo_launcher_4];
+const all_weapon_names = [];
+const all_weapon_values = [];
 for (let i = 0; i < all_weapons.length; i++) {
-	let newOption = new Option(all_weapons[i].name, i);
-    let select = document.querySelector("#class_weapons_choice");
-    select.add(newOption, undefined);
+	all_weapon_names.push(all_weapons[i].name);
+    all_weapon_values.push(i);
 }
 
 // Define armors
@@ -402,8 +423,8 @@ const crusier_armor_4 = new Armor("Crusier Armor IV", 12, 1.15, 0.875);
 const all_armors = [destroyer_armor, crusier_armor_1, crusier_armor_2, crusier_armor_3, crusier_armor_4];
 
 // Define types
-destroyer_type = new ShipType("Destroyer", [light_engine_1, light_engine_2, light_engine_3, light_engine_4], [destroyer_armor], 1);
-crusier_type = new ShipType("Crusier", [crusier_engine_1, crusier_engine_2, crusier_engine_3, crusier_engine_4], [crusier_armor_1, crusier_armor_2, crusier_armor_3, crusier_armor_4], 1);
+destroyer_type = new ShipType("Destroyer", [light_engine_1, light_engine_2, light_engine_3, light_engine_4], [destroyer_armor], 2);
+crusier_type = new ShipType("Crusier", [crusier_engine_1, crusier_engine_2, crusier_engine_3, crusier_engine_4], [crusier_armor_1, crusier_armor_2, crusier_armor_3, crusier_armor_4], 4);
 
 // Define hulls
 const early_destroyer_hull = new Hull("Early Destroyer Hull", destroyer_type, 32, 1500, 25, 0.8, 10);
